@@ -8,7 +8,7 @@ We've been quietly running a small Arbitrum indexer in the corner of the office 
 
 camp is a Dune-class data API for Arbitrum One. Same query shape Dune offers — decoded protocol tables, parameterised aggregates, ad-hoc SQL — but live (tip-fresh, not the four-to-six-hour lag Dune ships with) and free at every tier we've thought about offering. It's a single REST surface over a self-hosted Amp node, plus a thin Vercel-hosted gateway that does TLS, rate limits, and a handful of opinionated decoded views.
 
-The whole stack — Next.js gateway, ops scripts, runbook — is open under [nightswatchhq/camp](https://github.com/nightswatchhq/camp) (MIT). Everything in this post is something you can read, run, or fork tonight.
+The whole stack — Next.js gateway, ops scripts, runbook — is open under [nuthatch-org/camp](https://github.com/nuthatch-org/camp) (MIT). Everything in this post is something you can read, run, or fork tonight.
 
 ---
 
@@ -132,7 +132,7 @@ Three things deserve explanation.
 
 ampd is what does the real work: Rust, designed for SQL-against-EVM. It pulls blocks/receipts/logs from an RPC, writes them to Parquet on disk, exposes everything through Apache Arrow FlightSQL (and a JSON Lines HTTP server), and ships with the EVM-specific UDFs that make decoded queries possible. Compactor merges small parquets into bigger ones in the background; once that catches up, narrow-range queries return in well under a second.
 
-camp builds `ampd` **from source — [`nightswatchhq/camp-node`](https://github.com/nightswatchhq/camp-node)** (built on Edge & Node's Amp, BUSL-1.1) — not the closed-source binary from ampup.sh. We point it at a single dataset, `_/arbitrum_one`, and let it tip-follow Arbitrum One. The usable window grows by ~24h every calendar day; we let history accumulate rather than bulk-backfilling.
+camp builds `ampd` **from source — [`nuthatch-org/camp-node`](https://github.com/nuthatch-org/camp-node)** (built on Edge & Node's Amp, BUSL-1.1) — not the closed-source binary from ampup.sh. We point it at a single dataset, `_/arbitrum_one`, and let it tip-follow Arbitrum One. The usable window grows by ~24h every calendar day; we let history accumulate rather than bulk-backfilling.
 
 ### The Flight shim
 
@@ -202,7 +202,7 @@ camp is a recipe, not a service. If you want your own — for a different chain,
 2. **A server.** Anything Linux-ish with a few hundred GB of disk and enough RAM for ampd (we get away with 16 GB). A ThinkPad is fine. A NUC is fine. A small VPS is fine.
 3. **ampd.** Single binary, configured via TOML, exposes FlightSQL on a local port. Deploys as a systemd unit. The amping repo has working configs (`ampd.toml`) and the dataset manifest (`amp.config.ts`) you can copy.
 4. **The Flight shim.** Optional today, mandatory if you want to expose ampd over a network that speaks anything other than Arrow Flight. Our shim is in `~/amping/flight-shim/` — it's small enough to read in one sitting.
-5. **The gateway.** The Next.js 16 app at [nightswatchhq/camp](https://github.com/nightswatchhq/camp). `pnpm install && pnpm dev` works locally. Set `AMP_ORIGIN` to point at your shim and you're live.
+5. **The gateway.** The Next.js 16 app at [nuthatch-org/camp](https://github.com/nuthatch-org/camp). `pnpm install && pnpm dev` works locally. Set `AMP_ORIGIN` to point at your shim and you're live.
 
 ### Wiring it up
 
@@ -217,7 +217,7 @@ The whole bring-up, end-to-end on a clean box, is roughly:
 ./deploy/deploy-dataset.sh        # backfill ampd from your chosen start block
 
 # Gateway-side
-git clone https://github.com/nightswatchhq/camp
+git clone https://github.com/nuthatch-org/camp
 cd camp && pnpm install
 # set AMP_ORIGIN + UPSTASH_REDIS_REST_URL in Vercel env
 vercel --prod
@@ -263,7 +263,7 @@ A "transactions per block-builder per hour" aggregate is twenty lines of new cod
 
 ## What's next
 
-The roadmap lives in [ROADMAP.md](https://github.com/nightswatchhq/camp/blob/main/ROADMAP.md) and updates with every release. The honest near-term list:
+The roadmap lives in [ROADMAP.md](https://github.com/nuthatch-org/camp/blob/main/ROADMAP.md) and updates with every release. The honest near-term list:
 
 - **GMX V2 decoded events.** GMX uses an `EventEmitter` pattern where every event is encoded into a single generic log, which means `evm_decode_log` needs a registry of expected payloads rather than per-topic ABI fragments. Different shape than the rest of our decoded protocols, but high-value for Arbitrum analysts.
 - **CSV / Arrow IPC export formats.** Right now everything returns JSON. CSV for Excel-and-Sheets users; Arrow IPC for pandas/Polars users who want zero-copy.
@@ -281,9 +281,9 @@ Everything is open. The Next.js gateway, the ampd configs, the ops scripts, the 
 
 - **Try it:** [engine.camp](https://engine.camp)
 - **Docs:** [engine.camp/docs](https://engine.camp/docs) and [openapi.yaml](https://engine.camp/openapi.yaml)
-- **Code:** [github.com/nightswatchhq/camp](https://github.com/nightswatchhq/camp)
+- **Code:** [github.com/nuthatch-org/camp](https://github.com/nuthatch-org/camp)
 - **Background:** [intro to camp](https://www.lodestar-dashboard.com/blog/camp-free-amp-api-arbitrum) and [camp deep dive](https://www.lodestar-dashboard.com/blog/camp-deep-dive) over on the Lodestar blog
-- **Roadmap:** [ROADMAP.md](https://github.com/nightswatchhq/camp/blob/main/ROADMAP.md)
+- **Roadmap:** [ROADMAP.md](https://github.com/nuthatch-org/camp/blob/main/ROADMAP.md)
 
 If you find a query that should be fast and isn't, an endpoint that returns surprising data, or a protocol you'd love to see decoded — open an issue. We read all of them, and the laptop is a phone call away from a fix.
 
