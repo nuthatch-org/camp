@@ -4,7 +4,7 @@ This is the exact setup `camp` runs in production: **one `ampd` binary, one box,
 a local Postgres catalog** — no distributed controller/worker split. It's enough
 to index a full chain at tip and serve queries with single-digit-second freshness.
 
-camp builds `ampd` from its own engine, **[nightswatchhq/camp-node](https://github.com/nightswatchhq/camp-node)**
+camp builds `ampd` from its own engine, **[nuthatch-org/camp-node](https://github.com/nuthatch-org/camp-node)**
 (built on Edge & Node's Amp, BUSL-1.1) — not the closed-source ampup.sh binary. Build it first
 (see camp-node's README: `cargo build --release -p ampd -p ampctl`), then follow this guide. Tested
 on **camp-node v0.1.0** (`a1937bf`). Note the compactor defaults **off** in
